@@ -23,7 +23,8 @@ void
 Position::
 print(FILE*  f) const
 {
-  fprintf(f,"行:%4d 列:%4d",line_number+1,column_number+1);
+  fprintf(f,"行:%4d\n"
+            "列:%4d\n",line_number+1,column_number+1);
 }
 
 

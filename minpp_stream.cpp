@@ -20,6 +20,22 @@ pointer(p)
 
 
 
+bool
+Stream::
+test() const
+{
+  return(*pointer);
+}
+
+
+bool
+Stream::
+test_char(char  c) const
+{
+  return(*pointer == c);
+}
+
+
 char16_t
 Stream::
 get_char16()
@@ -95,34 +111,40 @@ try_read(const char*  s)
 }
 
 
-std::string
+void
 Stream::
-read_string_until(char  c)
+print(int  line_length) const
 {
-  std::string  s;
+  position.print();
+
+  auto  p = pointer-position.column_number;
 
     for(;;)
     {
-      auto  cc = get_char16();
+      auto  c = *p++;
 
-        if(!cc)
+        if(!c || (c == '\n'))
         {
-          report;
-          break;
-        }
+          printf("\n");
 
-      else
-        if(cc == c)
-        {
           break;
         }
 
 
-      s.push_back(cc);
+      printf("%c",c);
     }
 
 
-  return std::move(s);
+    for(int  n = 0;  n < position.column_number;  ++n)
+    {
+      printf(" ");
+    }
+
+
+    while(line_length--)
+    {
+      printf("~");
+    }
 }
 
 

@@ -11,7 +11,19 @@ main(int  argc, char**  argv)
 {
     if(argc == 2)
     {
-      auto  ls = open(argv[1]);
+      ElementList  ls;
+
+        try
+        {
+          ls = open(argv[1]);
+        }
+
+
+        catch(...)
+        {
+          exit(-1);
+        }
+
 
       print(ls);
     }

@@ -40,7 +40,7 @@ get_utf8_byte_number(const char*  s)
 
 
 size_t
-get_utf8_length(const char*  s)
+get_unicode_length(const char*  s)
 {
   size_t  length = 0;
 

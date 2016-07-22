@@ -61,15 +61,15 @@ OBJ +=                        \
   minpp.o                     \
 
 
-all: $(OBJ)
+all: $(OBJ) test_minpp
 
 
 clean:
-	rm -f $(OBJ) test_minpp
+	rm -f $(OBJ) test_minpp test.o
 
 
-test_minpp: $(OBJ)
-	g++ test.cpp $(OBJ) -o $@ $(CXXFLAGS)
+test_minpp: $(OBJ) test.o
+	g++ $(OBJ) test.o -o $@ $(CXXFLAGS)
 
 
 

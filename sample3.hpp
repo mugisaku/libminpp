@@ -4,8 +4,4 @@
 #include_once"sample2.hpp"
 
 
-function_c(){}
-
-
-
-
+function_c(){}"test"

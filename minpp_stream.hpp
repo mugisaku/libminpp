@@ -22,13 +22,16 @@ public:
 
   char16_t  get_char16();
 
+  bool  test() const;
+  bool  test_char(char  c) const;
+
   void  advance(int  n=1);
 
   Position  get_position() const;
 
   bool  try_read(const char*  s);
 
-  std::string  read_string_until(char  c);
+  void  print(int  line_length=1) const;
 
 };
 
