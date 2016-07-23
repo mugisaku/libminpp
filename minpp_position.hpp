@@ -22,6 +22,8 @@ Position
 
   Position(uint16_t  ln=0, uint16_t  cn=0);
 
+  void  reset(uint16_t  ln=0, uint16_t  cn=0);
+
   void  print(FILE*  f=stdout) const;
 
 };

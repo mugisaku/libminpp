@@ -1,5 +1,6 @@
 #include"minpp_stream.hpp"
 #include"minpp_unicode.hpp"
+#include"minpp.hpp"
 #include<cstdio>
 #include<cstring>
 
@@ -13,11 +14,87 @@ namespace minpp{
 
 Stream::
 Stream(const char*  p):
-pointer(p)
+pointer(p),
+id_index(nullidx)
 {
 }
 
 
+
+
+void
+Stream::
+reset(const char*  p)
+{
+  position.reset();
+
+  pointer = p;
+
+  id_index = nullidx;
+}
+
+
+std::string
+Stream::
+read_id()
+{
+  std::string  id;
+
+  auto  base = *this;
+
+    if(try_read("#fileid\""))
+    {
+        for(;;)
+        {
+          auto  c = get_char16();
+
+            if(!c)
+            {
+              printf("\'\"\'で閉じられていません\n");
+
+              throw ErrorOnProcessStream(base);
+            }
+
+          else
+            if(c == '\n')
+            {
+              printf("途中で改行されました\n");
+
+              throw ErrorOnProcessStream(*this);
+            }
+
+          else
+            if(c == '\"')
+            {
+              break;
+            }
+
+
+          id.push_back(c);
+        }
+    }
+
+
+  return std::move(id);
+}
+
+
+Index  Stream::get_id_index() const{return id_index;}
+void  Stream::change_id_index(Index  i){id_index = i;}
+
+
+const std::string*
+Stream::
+get_id() const
+{
+    if(id_index != nullidx)
+    {
+      return &minpp::get_id(id_index);
+    }
+
+
+  return nullptr;
+}
 
 
 bool

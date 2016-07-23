@@ -3,14 +3,16 @@
 
 
 #include"minpp_position.hpp"
+#include<string>
 
 
 
 namespace minpp{
 
 
+using Index = uint16_t;
 
-constexpr uint16_t  nullid = 0xFFFF;
+constexpr uint16_t  nullidx = 0xFFFF;
 
 
 struct
@@ -18,12 +20,12 @@ Element
 {
   Position  position;
 
-  uint16_t  id_index;
+  Index  id_index;
 
   char16_t  unicode;
 
 
-  Element(Position  pos, uint16_t  i=0, char16_t  c=0);
+  Element(Position  pos, Index  i=0, char16_t  c=0);
 
   void  print(FILE*  f=stdout, bool  verbose=false) const;
 

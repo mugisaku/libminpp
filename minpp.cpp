@@ -1,8 +1,7 @@
 #include"minpp.hpp"
-#include"minpp_idtable.hpp"
 #include"minpp_stream.hpp"
 #include"minpp_unicode.hpp"
-#include"minpp_unicode_character8.hpp"
+#include"minpp_utf8chunk.hpp"
 #include<cstdlib>
 #include<cstdio>
 #include<cstring>
@@ -15,96 +14,7 @@ namespace minpp{
 
 namespace{
 std::string
-open_file(const char*  path)
-{
-  std::string  buf;
-
-  auto  f = fopen(path,"rb");
-
-    if(f)
-    {
-        for(;;)
-        {
-          auto  c = fgetc(f);
-
-            if(ferror(f))
-            {
-              throw ErrorOnReadFile();
-            }
-
-
-            if(feof(f))
-            {
-              break;
-            }
-
-
-          buf.push_back(c);
-        }
-
-
-      fclose(f);
-    }
-
-  else
-    {
-      throw ErrorOnOpenFile();
-    }
-
-
-  return std::move(buf);
-}
-
-
-uint16_t
-get_index(Stream&  s)
-{
-  auto  base = s;
-
-    if(s.try_read("#fileid\""))
-    {
-      std::string  id;
-
-        for(;;)
-        {
-          auto  c = s.get_char16();
-
-            if(!c)
-            {
-              printf("\'\"\'で閉じられていません\n");
-
-              throw ErrorOnReadRange(base);
-            }
-
-          else
-            if(c == '\n')
-            {
-              printf("途中で改行されました\n");
-
-              throw ErrorOnReadRange(s);
-            }
-
-          else
-            if(c == '\"')
-            {
-              break;
-            }
-
-
-          id.push_back(c);
-        }
-
-
-      return append_id(std::move(id));
-    }
-
-
-  return nullid;
-}
-
-
-std::string
-read_string_until(Stream&  s, uint16_t  id_index, char  c)
+read_string_until(Stream&  s, char  c)
 {
   std::string  buf;
 
@@ -118,7 +28,7 @@ read_string_until(Stream&  s, uint16_t  id_index, char  c)
         {
           printf("\'%c\'で閉じられていません\n",c);
 
-          throw ErrorOnReadRange(base,id_index);
+          throw ErrorOnProcessStream(base);
         }
 
       else
@@ -126,7 +36,7 @@ read_string_until(Stream&  s, uint16_t  id_index, char  c)
         {
           printf("文字列の途中で改行されました\n");
 
-          throw ErrorOnReadRange(base,id_index);
+          throw ErrorOnProcessStream(base);
         }
 
       else
@@ -154,9 +64,11 @@ read_string_until(Stream&  s, uint16_t  id_index, char  c)
 
 
 void
-read_element_until(ElementList&  buf, Stream&  s, uint16_t  id_index, char  c)
+read_element_until(ElementList&  buf, Stream&  s, char  c)
 {
   auto  base = s;
+
+  auto  id_index = s.get_id_index();
 
     for(;;)
     {
@@ -168,7 +80,7 @@ read_element_until(ElementList&  buf, Stream&  s, uint16_t  id_index, char  c)
         {
           printf("\'%c\'で閉じられていません\n",c);
 
-          throw ErrorOnReadRange(base,id_index);
+          throw ErrorOnProcessStream(base);
         }
 
       else
@@ -198,7 +110,7 @@ read_element_until(ElementList&  buf, Stream&  s, uint16_t  id_index, char  c)
 
 
 bool
-read_range(ElementList&  ls, Stream&  s, uint16_t  id_index, char  c)
+read_range(ElementList&  ls, Stream&  s, char  c)
 {
     if(!s.test_char(c))
     {
@@ -206,11 +118,13 @@ read_range(ElementList&  ls, Stream&  s, uint16_t  id_index, char  c)
     }
 
 
+  auto  id_index = s.get_id_index();
+
   ls.emplace_back(s.get_position(),id_index,c);
 
   s.advance();
 
-  read_element_until(ls,s,id_index,c);
+  read_element_until(ls,s,c);
 
   ls.emplace_back(s.get_position(),id_index,c);
 
@@ -219,7 +133,7 @@ read_range(ElementList&  ls, Stream&  s, uint16_t  id_index, char  c)
 
 
 bool
-read_include(ElementList&  ls, Stream&  s, uint16_t  id_index)
+read_include(ElementList&  ls, Stream&  s)
 {
     if(!s.try_read("#include\""))
     {
@@ -228,9 +142,9 @@ read_include(ElementList&  ls, Stream&  s, uint16_t  id_index)
 
 
 
-  std::string  buf = read_string_until(s,id_index,'\"');
+  std::string  buf = read_string_until(s,'\"');
 
-  ElementList  incls = open(buf.data(),id_index);
+  ElementList  incls = open(buf.data(),s.get_id_index());
 
     for(auto&  e: incls)
     {
@@ -243,7 +157,7 @@ read_include(ElementList&  ls, Stream&  s, uint16_t  id_index)
 
 
 bool
-read_include_once(ElementList&  ls, Stream&  s, uint16_t  id_index)
+read_include_once(ElementList&  ls, Stream&  s)
 {
     if(!s.try_read("#include_once\""))
     {
@@ -251,11 +165,11 @@ read_include_once(ElementList&  ls, Stream&  s, uint16_t  id_index)
     }
 
 
-  std::string  buf = read_string_until(s,id_index,'\"');
+  std::string  buf = read_string_until(s,'\"');
 
     if(!test_id(buf))
     {
-      ElementList  incls = open(buf.data(),id_index);
+      ElementList  incls = open(buf.data(),s.get_id_index());
 
         for(auto&  e: incls)
         {
@@ -294,7 +208,7 @@ read_line_comment(Stream&  s)
 
 
 bool
-read_range_comment(Stream&  s, uint16_t  id_index)
+read_range_comment(Stream&  s)
 {
   auto  base = s;
 
@@ -310,7 +224,7 @@ read_range_comment(Stream&  s, uint16_t  id_index)
         {
           printf("コメントが閉じられていません\n");
 
-          throw ErrorOnReadRange(base,id_index);
+          throw ErrorOnProcessStream(base);
         }
 
 
@@ -328,15 +242,21 @@ read_range_comment(Stream&  s, uint16_t  id_index)
 
 
 ElementList
-open(const char*  path, uint16_t  parent_id_index)
+open(const char*  path, Index  parent_id_index)
 {
   ElementList  ls;
 
-  std::string  src;
+  Stream  s;
 
     try
     {
-      src = open_file(path);
+      s = create_stream_from_file(path);
+    }
+
+
+    catch(ErrorOnProcessStream&  e)
+    {
+      throw;
     }
 
 
@@ -357,16 +277,12 @@ open(const char*  path, uint16_t  parent_id_index)
 
 
 
-  Stream  s(src.data());
-
   Stream  tmps = s;
 
-  const auto  id_index = get_index(s);
-
-    if((       id_index != nullid) &&
-       (parent_id_index != nullid))
+    if((s.get_id_index() != nullidx) &&
+       ( parent_id_index != nullidx))
     {
-        if(id_index == parent_id_index)
+        if(s.get_id_index() == parent_id_index)
         {
           printf("再帰読み込みが発生しました\n");
 
@@ -379,11 +295,11 @@ open(const char*  path, uint16_t  parent_id_index)
     {
         for(;;)
         {
-               if(read_range(       ls,s,id_index,'\"')){}
-          else if(read_range(       ls,s,id_index,'\'')){}
-          else if(read_include(     ls,s,id_index)){}
-          else if(read_include_once(ls,s,id_index)){}
-          else if(read_range_comment(  s,id_index)){}
+               if(read_range(       ls,s,'\"')){}
+          else if(read_range(       ls,s,'\'')){}
+          else if(read_include(     ls,s)){}
+          else if(read_include_once(ls,s)){}
+          else if(read_range_comment(  s)){}
           else if(read_line_comment(s)){}
           else
             {
@@ -396,21 +312,21 @@ open(const char*  path, uint16_t  parent_id_index)
                 }
 
 
-              ls.emplace_back(pos,id_index,c);
+              ls.emplace_back(pos,s.get_id_index(),c);
             }
         }
     }
 
 
-    catch(ErrorOnReadRange&  e)
+    catch(ErrorOnProcessStream&  e)
     {
         if(!e.printed)
         {
-            if(e.id_index != nullid)
-            {
-              auto&  id = get_id(e.id_index);
+          auto  id = e.stream.get_id();
 
-              printf("%s\n",id.data());
+            if(id)
+            {
+              printf("%s\n",id->data());
             }
 
 
@@ -428,9 +344,13 @@ open(const char*  path, uint16_t  parent_id_index)
 
     catch(const ErrorOnInclude&  e)
     {
-      auto&  id = get_id(id_index);
+      auto  id = s.get_id();
 
-      printf("%s\n",id.data());
+        if(id)
+        {
+          printf("%s\n",id->data());
+        }
+
 
       tmps.print();
 
@@ -442,9 +362,13 @@ open(const char*  path, uint16_t  parent_id_index)
 
     catch(const ErrorOnOperateFile&  e)
     {
-      auto&  id = get_id(id_index);
+      auto  id = s.get_id();
 
-      printf("%s\n",id.data());
+        if(id)
+        {
+          printf("%s\n",id->data());
+        }
+
 
       tmps.print();
 

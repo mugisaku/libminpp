@@ -1,7 +1,7 @@
 #include"minpp_element.hpp"
 #include"minpp_unicode.hpp"
-#include"minpp_unicode_character8.hpp"
-#include"minpp_idtable.hpp"
+#include"minpp_utf8chunk.hpp"
+#include"minpp.hpp"
 #include<cstdio>
 
 
@@ -13,7 +13,7 @@ namespace minpp{
 
 
 Element::
-Element(Position  pos, uint16_t  i, char16_t  c):
+Element(Position  pos, Index  i, char16_t  c):
 position(pos),
 id_index(i),
 unicode(c)
@@ -37,9 +37,9 @@ print(FILE*  f, bool  verbose) const
     }
 
 
-  Character8  c8(unicode);
+  UTF8Chunk  chk(unicode);
 
-  fprintf(f,"%s",c8.codes);
+  fprintf(f,"%s",chk.codes);
 }
 
 

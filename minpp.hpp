@@ -39,25 +39,14 @@ ErrorOnInclude
 };
 
 
-struct
-ErrorOnReadRange
-{
-  const Stream  stream;
 
-  uint16_t  id_index;
+ElementList  open(const char*  path, Index  parent_id_index=nullidx);
 
-  int  printed;
+bool  test_id(const std::string&  id);
 
-  ErrorOnReadRange(const Stream&  s, uint16_t  i=nullid):
-  stream(s),
-  id_index(i),
-  printed(0){}
+const std::string&  get_id(Index  i);
 
-};
-
-
-
-ElementList  open(const char*  path, uint16_t  parent_id_index=nullid);
+Stream  create_stream_from_file(const char*  path);
 
 void  print(const ElementList&  ls, FILE*  f=stdout, bool  verbose=false);
 

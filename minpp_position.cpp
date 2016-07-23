@@ -21,6 +21,15 @@ column_number(cn)
 
 void
 Position::
+reset(uint16_t  ln, uint16_t  cn)
+{
+    line_number = ln;
+  column_number = cn;
+}
+
+
+void
+Position::
 print(FILE*  f) const
 {
   fprintf(f,"行:%4d\n"
