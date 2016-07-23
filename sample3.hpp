@@ -2,7 +2,6 @@
 
 
 #include_once"sample2.hpp"
-#include_once"sample2.hpp"
 
 
-function_c(){}"test
+function_c(){}"test"

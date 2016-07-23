@@ -167,14 +167,32 @@ read_include_once(ElementList&  ls, Stream&  s)
 
   std::string  buf = read_string_until(s,'\"');
 
-    if(!test_id(buf))
+    try
     {
-      ElementList  incls = open(buf.data(),s.get_id_index());
+      ElementList  incls = open(buf.data(),s.get_id_index(),true);
 
         for(auto&  e: incls)
         {
           ls.emplace_back(e);
         }
+    }
+
+
+    catch(const ErrorOnIncludeOnce&  e)
+    {
+      auto  id = s.get_id();
+
+        if(id)
+        {
+          printf("%s\n",id->data());
+        }
+
+
+      s.print();
+
+      printf("\n");
+
+      throw;
     }
 
 
@@ -242,7 +260,7 @@ read_range_comment(Stream&  s)
 
 
 ElementList
-open(const char*  path, Index  parent_id_index)
+open(const char*  path, Index  parent_id_index, bool  once)
 {
   ElementList  ls;
 
@@ -287,6 +305,17 @@ open(const char*  path, Index  parent_id_index)
           printf("再帰読み込みが発生しました\n");
 
           throw ErrorOnInclude();
+        }
+    }
+
+
+    if(once)
+    {
+        if(s.get_id_index() == nullidx)
+        {
+          printf("include_onceしようとしたファイル\"%s\"にIDがありません\n",path);
+
+          throw ErrorOnIncludeOnce();
         }
     }
 

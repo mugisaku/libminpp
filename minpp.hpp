@@ -39,12 +39,19 @@ ErrorOnInclude
 };
 
 
+struct
+ErrorOnIncludeOnce
+{
+};
 
-ElementList  open(const char*  path, Index  parent_id_index=nullidx);
+
+
+ElementList  open(const char*  path, Index  parent_id_index=nullidx, bool  once=false);
 
 bool  test_id(const std::string&  id);
 
 const std::string&  get_id(Index  i);
+const char*         get_text(Index  i);
 
 Stream  create_stream_from_file(const char*  path);
 

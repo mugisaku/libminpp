@@ -136,6 +136,13 @@ get_id(Index  i)
 }
 
 
+const char*
+get_text(Index  i)
+{
+  return table[i].pointer;
+}
+
+
 Stream
 create_stream_from_file(const char*  path)
 {
