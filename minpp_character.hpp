@@ -1,5 +1,5 @@
-#ifndef MINPP_ELEMENT_HPP_INCLUDED
-#define MINPP_ELEMENT_HPP_INCLUDED
+#ifndef MINPP_CHARACTER_HPP_INCLUDED
+#define MINPP_CHARACTER_HPP_INCLUDED
 
 
 #include"minpp_position.hpp"
@@ -12,11 +12,11 @@ namespace minpp{
 
 using Index = uint16_t;
 
-constexpr uint16_t  nullidx = 0xFFFF;
+constexpr uint16_t  nullidx = 0;
 
 
 struct
-Element
+Character
 {
   Position  position;
 
@@ -25,7 +25,7 @@ Element
   char16_t  unicode;
 
 
-  Element(Position  pos, Index  i=0, char16_t  c=0);
+  Character(Position  pos=Position(), Index  i=0, char16_t  c=0);
 
   void  print(FILE*  f=stdout, bool  verbose=false) const;
 

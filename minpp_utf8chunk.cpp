@@ -1,15 +1,24 @@
 #include"minpp_utf8chunk.hpp"
+#include"minpp_unicode.hpp"
+#include<cstring>
+
+
 
 
 namespace minpp{
-
-
 
 
 UTF8Chunk::
 UTF8Chunk(char16_t  c)
 {
   *this = c;
+}
+
+
+UTF8Chunk::
+UTF8Chunk(const char*  s)
+{
+  *this = s;
 }
 
 
@@ -44,6 +53,20 @@ operator=(char16_t  c)
       codes[3] = 0;
     }
 
+
+  return *this;
+}
+
+
+UTF8Chunk&
+UTF8Chunk::
+operator=(const char*  s)
+{
+  auto  n = get_utf8_byte_number(s);
+
+  std::memcpy(codes,s,n);
+
+  codes[n] = 0;
 
   return *this;
 }

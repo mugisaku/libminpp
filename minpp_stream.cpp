@@ -1,6 +1,6 @@
 #include"minpp_stream.hpp"
 #include"minpp_unicode.hpp"
-#include"minpp.hpp"
+#include"minpp_folder.hpp"
 #include<cstdio>
 #include<cstring>
 
@@ -13,10 +13,24 @@ namespace minpp{
 
 
 Stream::
-Stream(const char*  p):
-pointer(p),
+Stream():
+pointer(nullptr),
 id_index(nullidx)
 {
+}
+
+
+Stream::
+Stream(std::string&&  source_)
+{
+  reset(std::move(source_));
+}
+
+
+Stream::
+Stream(FILE*  f)
+{
+  reset(f);
 }
 
 
@@ -24,13 +38,55 @@ id_index(nullidx)
 
 void
 Stream::
-reset(const char*  p)
+reset(std::string&&  source_)
 {
   position.reset();
 
-  pointer = p;
+  source = std::move(source_);
 
-  id_index = nullidx;
+  pointer = source.data();
+
+  auto  id = read_id();
+
+    if(id.size())
+    {
+      change_id_index(push_text(std::move(id),source));
+    }
+
+  else
+    {
+      change_id_index(nullidx);
+    }
+}
+
+
+void
+Stream::
+reset(FILE*  f)
+{
+  std::string  buf;
+
+    for(;;)
+    {
+      auto  c = fgetc(f);
+
+        if(ferror(f))
+        {
+          throw ErrorOnReadFile();
+        }
+
+
+        if(feof(f))
+        {
+          break;
+        }
+
+
+      buf.push_back(c);
+    }
+
+
+  reset(std::move(buf));
 }
 
 
@@ -40,10 +96,10 @@ read_id()
 {
   std::string  id;
 
-  auto  base = *this;
-
     if(try_read("#fileid\""))
     {
+      auto  base = *this;
+
         for(;;)
         {
           auto  c = get_char16();
@@ -83,17 +139,11 @@ Index  Stream::get_id_index() const{return id_index;}
 void  Stream::change_id_index(Index  i){id_index = i;}
 
 
-const std::string*
+const Text*
 Stream::
-get_id() const
+get_text() const
 {
-    if(id_index != nullidx)
-    {
-      return &minpp::get_id(id_index);
-    }
-
-
-  return nullptr;
+  return minpp::get_text(id_index);
 }
 
 
@@ -131,12 +181,28 @@ get_char16()
 
     if(c == '\n')
     {
+        if(position.line_number >= 0xFFFF)
+        {
+          printf("行数が上限を越えましn");
+
+          throw ErrorOnProcessStream(*this);
+        }
+
+
         position.line_number += 1;
       position.column_number  = 0;
     }
 
   else
     {
+        if(position.column_number >= 0xFFFF)
+        {
+          printf("桁数が上限を越えましn");
+
+          throw ErrorOnProcessStream(*this);
+        }
+
+
       position.column_number += 1;
     }
 

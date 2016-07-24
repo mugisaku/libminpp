@@ -11,11 +11,11 @@ main(int  argc, char**  argv)
 {
     if(argc == 2)
     {
-      ElementList  ls;
+      String  str;
 
         try
         {
-          ls = open(argv[1]);
+          str.open(argv[1]);
         }
 
 
@@ -25,7 +25,9 @@ main(int  argc, char**  argv)
         }
 
 
-      print(ls);
+      str.print(stdout);
+
+      printf("\n");
     }
 
 

@@ -2,11 +2,18 @@
 #define MINPP_STREAM_HPP_INCLUDED
 
 
-#include"minpp_element.hpp"
+#include"minpp_character.hpp"
+#include"minpp_folder.hpp"
 
 
 
 namespace minpp{
+
+
+struct
+ErrorOnReadFile
+{
+};
 
 
 class
@@ -14,15 +21,20 @@ Stream
 {
   Position  position;
 
+  std::string  source;
+
   const char*  pointer;
 
   Index  id_index;
 
 public:
-  Stream(const char*  p=nullptr);
+  Stream();
+  Stream(FILE*  f);
+  Stream(std::string&&  source_);
 
 
-  void  reset(const char*  p);
+  void  reset(std::string&&  source_);
+  void  reset(FILE*  f);
 
   std::string  read_id();
 
@@ -34,7 +46,7 @@ public:
   Index  get_id_index() const;
   void  change_id_index(Index  i);
 
-  const std::string*  get_id() const;
+  const Text*  get_text() const;
 
   void  advance(int  n=1);
 

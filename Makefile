@@ -53,12 +53,12 @@ endif
 
 OBJ +=                        \
   minpp_position.o            \
+  minpp_folder.o              \
   minpp_stream.o              \
-  minpp_element.o             \
+  minpp_character.o           \
+  minpp_string.o              \
   minpp_unicode.o             \
   minpp_utf8chunk.o           \
-  minpp.o                     \
-  minpp__create_stream.o      \
 
 
 all: $(OBJ) test_minpp

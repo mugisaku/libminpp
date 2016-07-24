@@ -8,8 +8,6 @@
 namespace minpp{
 
 
-size_t  u16strlen(const char16_t*  str);
-
 size_t  get_utf8_byte_number(const char*  s);
 size_t  get_unicode_length(const char*  s);
 
