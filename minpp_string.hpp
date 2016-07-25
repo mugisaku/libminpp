@@ -30,6 +30,8 @@ String: public std::vector<Character>
 {
 
 public:
+  String();
+
   explicit String(Stream&  s);
 
   std::string  to_stdstring() const;

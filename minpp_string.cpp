@@ -371,6 +371,12 @@ include(String&  dst, Stream&  s, Index  parent_id_index, bool  once)
 
 
 String::
+String()
+{
+}
+
+
+String::
 String(Stream&  s)
 {
   include(*this,s,nullidx,false);
