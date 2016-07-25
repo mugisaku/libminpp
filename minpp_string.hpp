@@ -3,17 +3,12 @@
 
 
 #include"minpp_character.hpp"
+#include"minpp_stream.hpp"
 #include<vector>
 
 
 
 namespace minpp{
-
-
-struct
-ErrorOnOpenFile
-{
-};
 
 
 struct
@@ -35,7 +30,7 @@ String: public std::vector<Character>
 {
 
 public:
-  void  open(const char*  path);
+  explicit String(Stream&  s);
 
   std::string  to_stdstring() const;
 

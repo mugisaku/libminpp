@@ -140,7 +140,7 @@ try_read_range(String&  str, Stream&  s, char  c)
 }
 
 
-void  include_open(String&  dst, const char*  path, Index  parent_id_index, bool  once);
+void  include(String&  dst, Stream&  s, Index  parent_id_index, bool  once);
 
 
 bool
@@ -154,8 +154,9 @@ try_read_include(String&  str, Stream&  s)
 
   std::string  buf = read_std_string_until(s,'\"');
 
-  include_open(str,buf.data(),s.get_id_index(),false);
+  Stream  subs(FilePath(buf.data()));
 
+  include(str,subs,s.get_id_index(),false);
 
   return true;
 }
@@ -172,14 +173,19 @@ try_read_include_once(String&  str, Stream&  s)
 
   std::string  buf = read_std_string_until(s,'\"');
 
+  Stream  subs(FilePath(buf.data()));
+
     try
     {
-      include_open(str,buf.data(),s.get_id_index(),true);
+      include(str,subs,s.get_id_index(),true);
     }
 
 
     catch(const ErrorOnIncludeOnce&  e)
     {
+      printf("include_onceしようとしたファイル\"%s\"にIDがありません\n",buf.data());
+
+
       auto  text = s.get_text();
 
         if(text)
@@ -255,48 +261,9 @@ try_read_range_comment(Stream&  s)
 
 
 void
-include_open(String&  dst, const char*  path, Index  parent_id_index, bool  once)
+include(String&  dst, Stream&  s, Index  parent_id_index, bool  once)
 {
-  Stream  s;
-
-  auto  f = fopen(path,"rb");
-
-    if(!f)
-    {
-      printf("ファイル\"%s\"を開けませんでした\n",path);
-
-      throw ErrorOnOpenFile();
-    }
-
-
-    try
-    {
-      s.reset(f);
-    }
-
-
-    catch(ErrorOnProcessStream&  e)
-    {
-      fclose(f);
-
-      throw;
-    }
-
-
-    catch(const ErrorOnReadFile&  e)
-    {
-      fclose(f);
-
-      printf("ファイル\"%s\"を読み込めませんでした\n",path);
-
-      throw;
-    }
-
-
-  fclose(f);
-
-
-  Stream  tmps = s;
+  const Stream  tmps = s;
 
     if((s.get_id_index() != nullidx) &&
        ( parent_id_index != nullidx))
@@ -314,8 +281,6 @@ include_open(String&  dst, const char*  path, Index  parent_id_index, bool  once
     {
         if(s.get_id_index() == nullidx)
         {
-          printf("include_onceしようとしたファイル\"%s\"にIDがありません\n",path);
-
           throw ErrorOnIncludeOnce();
         }
 
@@ -405,13 +370,10 @@ include_open(String&  dst, const char*  path, Index  parent_id_index, bool  once
 
 
 
-void
 String::
-open(const char*  path)
+String(Stream&  s)
 {
-  clear();
-
-  include_open(*this,path,nullidx,false);
+  include(*this,s,nullidx,false);
 }
 
 

@@ -11,23 +11,24 @@ main(int  argc, char**  argv)
 {
     if(argc == 2)
     {
-      String  str;
-
         try
         {
-          str.open(argv[1]);
+          Stream  s;
+
+          s.reset(FilePath(argv[1]));
+
+          String  str(s);
+
+          str.print(stdout);
+
+          printf("\n");
         }
 
 
         catch(...)
         {
-          exit(-1);
+          return -1;
         }
-
-
-      str.print(stdout);
-
-      printf("\n");
     }
 
 

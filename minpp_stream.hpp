@@ -11,8 +11,24 @@ namespace minpp{
 
 
 struct
+ErrorOnOpenFile
+{
+};
+
+
+struct
 ErrorOnReadFile
 {
+};
+
+
+struct
+FilePath
+{
+  const char*  s;
+
+  constexpr FilePath(const char*  s_): s(s_){}
+
 };
 
 
@@ -29,10 +45,12 @@ Stream
 
 public:
   Stream();
-  Stream(FILE*  f);
-  Stream(std::string&&  source_);
+  explicit Stream(const FilePath&  path);
+  explicit Stream(FILE*  f);
+  explicit Stream(std::string&&  source_);
 
 
+  void  reset(const FilePath&  path);
   void  reset(std::string&&  source_);
   void  reset(FILE*  f);
 

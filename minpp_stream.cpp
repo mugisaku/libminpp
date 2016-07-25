@@ -28,6 +28,13 @@ Stream(std::string&&  source_)
 
 
 Stream::
+Stream(const FilePath&  path)
+{
+  reset(path);
+}
+
+
+Stream::
 Stream(FILE*  f)
 {
   reset(f);
@@ -58,6 +65,42 @@ reset(std::string&&  source_)
       change_id_index(nullidx);
     }
 }
+
+
+void
+Stream::
+reset(const FilePath&  path)
+{
+  auto  f = fopen(path.s,"rb");
+
+    if(!f)
+    {
+      printf("%sを開けませんでした\n",path.s);
+
+      throw ErrorOnOpenFile();
+    }
+
+
+    try
+    {
+      reset(f);
+    }
+
+
+    catch(const ErrorOnReadFile&  e)
+    {
+      fclose(f);
+
+      printf("ファイル\"%s\"を読み込めませんでした\n",path.s);
+
+      throw;
+    }
+
+
+  fclose(f);
+}
+
+
 
 
 void
