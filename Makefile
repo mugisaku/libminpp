@@ -68,6 +68,9 @@ clean:
 	rm -f $(OBJ) test_minpp test.o
 
 
+objects: $(OBJ)
+
+
 test_minpp: $(OBJ) test.o
 	g++ $(OBJ) test.o -o $@ $(CXXFLAGS)
 

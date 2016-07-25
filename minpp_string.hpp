@@ -37,6 +37,8 @@ String: public std::vector<Character>
 public:
   void  open(const char*  path);
 
+  std::string  to_stdstring() const;
+
   void  print(FILE*  f=stdout, bool  verbose=false) const;
 
 };

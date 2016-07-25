@@ -415,6 +415,20 @@ open(const char*  path)
 }
 
 
+std::string
+String::
+to_stdstring() const
+{
+  std::string  buf;
+
+    for(auto&  c: *this)
+    {
+      buf.append(UTF8Chunk(c.unicode).codes);
+    }
+
+
+  return std::move(buf);
+}
 
 
 void
